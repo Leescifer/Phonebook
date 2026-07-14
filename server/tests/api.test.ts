@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { once } from "node:events";
-import { app } from "../src/index.ts";
+import { app } from "../src/index.js";
 
 test("GET /api/health returns service status", async () => {
   const server = app.listen(0);

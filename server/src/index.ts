@@ -3,13 +3,17 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { pathToFileURL } from "node:url";
 
+const isMainModule = process.argv[1]
+  ? import.meta.url === pathToFileURL(process.argv[1]).href
+  : false;
+
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = Number(process.env.SERVER_PORT ?? 3000);
+const PORT = Number(process.env.SERVER_PORT);
 
 type User = {
   id: string;
@@ -274,18 +278,26 @@ app.delete(
   authenticate,
   (req: AuthenticatedRequest, res: Response) => {
     const index = contacts.findIndex((entry) => entry.id === req.params.id);
+
     if (index === -1) {
       res.status(404).json({ error: "Contact not found" });
       return;
     }
 
     const contact = contacts[index];
+
+    if (!contact) {
+      res.status(404).json({ error: "Contact not found" });
+      return;
+    }
+
     if (contact.ownerId !== req.user?.id) {
       res.status(403).json({ error: "Only the owner can delete a contact" });
       return;
     }
 
     contacts.splice(index, 1);
+
     res.json({ success: true });
   },
 );
@@ -354,10 +366,7 @@ const startServer = () => {
   });
 };
 
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(process.argv[1]).href
-) {
+if (isMainModule) {
   startServer();
 }
 

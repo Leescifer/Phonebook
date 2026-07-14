@@ -81,6 +81,7 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem("phonebook-token");
     if (token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAuth((current) => ({ ...current, token }));
       void loadData(token);
     }
