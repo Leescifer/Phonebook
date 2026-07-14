@@ -49,6 +49,9 @@ const emptyContactForm: ContactForm = {
   photo: "",
 };
 
+const fallbackPhoto =
+  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80";
+
 function App() {
   const [auth, setAuth] = useState<AuthState>({ token: null, user: null });
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
@@ -469,7 +472,7 @@ function App() {
             {filteredContacts.map((contact) => (
               <article key={contact.id} className="contact-card">
                 <img
-                  src={contact.photo}
+                  src={contact.photo || fallbackPhoto}
                   alt={`${contact.firstName} ${contact.lastName}`}
                 />
                 <div className="contact-meta">
