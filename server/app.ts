@@ -1,7 +1,55 @@
 import express from "express";
+import dotenv from "dotenv";
 import cors from "cors";
+import helment from "helmet";
+import cookieParser from "cookie-parser";
+import { type Request, type Response } from "express";
+
+dotenv.config();
 
 const app = express();
-app.use(cors());
+
+app.use(helment());
+
+const allowedOrigins = process.env.CLIENT_URL?.trim().replace(/\/$/, "");
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "X-Project-ID",
+    ],
+  }),
+);
+
+console.log(
+  `CORS configuration initialized. ${allowedOrigins ? `Allowed origin: ${allowedOrigins}` : "No allowed origins specified."}`,
+);
+
+app.use(cookieParser());
+
+app.use(express.json());
+
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "10mb",
+  }),
+);
+
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ error: "Not Found" });
+});
+
+app.use((err: Error, req: Request, res: Response) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Internal Server Error" });
+});
 
 export default app;

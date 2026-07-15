@@ -3,17 +3,21 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const mysqlPool = mysql.createPool({
+const mysqlConfig: mysql.PoolOptions = {
   host: process.env.MYSQL_HOST!,
-  port: process.env.MYSQL_PORT ? Number(process.env.MYSQL_PORT) : undefined,
   user: process.env.MYSQL_USER!,
   password: process.env.MYSQL_PASSWORD!,
   database: process.env.MYSQL_DATABASE!,
-
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-});
+};
+
+if (process.env.MYSQL_PORT) {
+  mysqlConfig.port = Number(process.env.MYSQL_PORT);
+}
+
+export const mysqlPool = mysql.createPool(mysqlConfig);
 
 export const initDB = async (): Promise<void> => {
   try {

@@ -3,9 +3,13 @@ import app from "./app.ts";
 import { connectDB } from "./src/config/mongo.db.ts";
 import { initDB } from "./src/config/mysql.db.ts";
 
+console.log("Starting server initialization...");
+
 dotenv.config();
 
-const PORT = Number(process.env.PORT) || 3000;
+console.log("Enviroment loaded, NODE_ENV:", process.env.NODE_ENV);
+
+const PORT = process.env.PORT;
 
 const startServer = async (): Promise<void> => {
   try {
