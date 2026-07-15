@@ -1,11 +1,22 @@
 import mysql from "mysql2/promise";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const requiredEnv = (name: string): string => {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing environment variable ${name}`);
+  }
+  return value;
+};
 
 export const mysqlPool = mysql.createPool({
-  host: process.env.MYSQL_HOST,
-  port: Number(process.env.MYSQL_PORT),
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
+  host: requiredEnv("MYSQL_HOST"),
+  port: Number(requiredEnv("MYSQL_PORT")),
+  user: requiredEnv("MYSQL_USER"),
+  password: requiredEnv("MYSQL_PASSWORD"),
+  database: requiredEnv("MYSQL_DATABASE"),
 
   waitForConnections: true,
   connectionLimit: 10,
