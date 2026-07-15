@@ -29,7 +29,7 @@ export const initDB = async (): Promise<void> => {
 
     connection.release();
   } catch (error) {
-    console.error("❌ Failed to connect to MySQL:", error);
+    console.error("Failed to connect to MySQL:", error);
     throw error;
   }
 };
