@@ -1,20 +1,37 @@
-import cors from "cors";
 import dotenv from "dotenv";
+import app from "./app.ts";
 import { connectDB } from "./src/config/mongo.db.ts";
-import { mysqlPool } from "./src/config/mysql.db.ts";
+import { initDB } from "./src/config/mysql.db.ts";
 
 dotenv.config();
 
-connectDB();
+const PORT = Number(process.env.PORT) || 3000;
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+const startServer = async (): Promise<void> => {
+  try {
+    await connectDB();
+    await initDB();
 
-const SERVER_PORT = process.env.PORT;
-
-const startServer = () => {
-  app.listen(SERVER_PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-  });
+    app.listen(PORT, () => {
+      console.log(` Server is running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error(" Server startup failed:", error);
+    process.exit(1);
+  }
 };
+
+const init = async (): Promise<void> => {
+  console.log("Initializing server...");
+  startServer();
+  try {
+  } catch (error) {
+    console.error("Error during server initialization:", error);
+    process.exit(1);
+  }
+};
+
+init().catch((_error) => {
+  console.error("Unhandled error during initialization:", _error);
+  process.exit(1);
+});
