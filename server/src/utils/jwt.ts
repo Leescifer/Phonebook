@@ -19,6 +19,7 @@ const secretKey: Secret = (() => {
 
 export interface TokenPayload extends JwtPayload {
   id: string;
+  jti: string;
   email?: string;
   role?: string;
 }
