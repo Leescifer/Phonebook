@@ -70,7 +70,9 @@ class AuthMiddleware {
         return;
       }
 
-      if (!roles.includes(req.user.role)) {
+      const userRole = req.user?.role_name ?? req.user?.role;
+
+      if (!roles.includes(userRole)) {
         res.status(403).json({
           success: false,
           message: "Forbidden.",

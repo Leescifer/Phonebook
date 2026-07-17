@@ -7,13 +7,20 @@ import { type Request, type Response } from "express";
 
 //Routes
 import authRoutes from "./src/routes/auth.route.ts";
+import userRoutes from "./src/routes/user.route.ts";
+import contactRoutes from "./src/routes/contact.route.ts";
 
 dotenv.config();
 
 const app = express();
-app.use("/auth", authRoutes);
-
 app.use(helment());
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
+app.use("/contacts", contactRoutes);
+
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 const allowedOrigins = process.env.CLIENT_URL?.trim().replace(/\/$/, "");
 

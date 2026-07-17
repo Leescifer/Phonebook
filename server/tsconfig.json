@@ -43,5 +43,6 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "esModuleInterop": true
-  }
+  },
+  "exclude": ["draft.ts"]
 }

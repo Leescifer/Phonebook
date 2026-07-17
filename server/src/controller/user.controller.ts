@@ -79,6 +79,41 @@ class UserController {
       });
     }
   }
+
+  async updateUser(req: Request, res: Response) {
+    try {
+      const id = Number(req.params.id);
+      const updates = req.body;
+
+      await userRepository.updateUser(id, updates);
+
+      res
+        .status(200)
+        .json({ success: true, message: "User updated successfully." });
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to update user." });
+    }
+  }
+
+  async deleteUser(req: Request, res: Response) {
+    try {
+      const id = Number(req.params.id);
+
+      await userRepository.deleteUser(id);
+
+      res
+        .status(200)
+        .json({ success: true, message: "User deleted successfully." });
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to delete user." });
+    }
+  }
 }
 
 export default new UserController();

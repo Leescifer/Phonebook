@@ -9,16 +9,18 @@ dotenv.config();
 
 console.log("Enviroment loaded, NODE_ENV:", process.env.NODE_ENV);
 
-const PORT = process.env.PORT;
+const PORT = Number(process.env.PORT ?? 3000);
 
 const startServer = async (): Promise<void> => {
   try {
     await connectDB();
     await initDB();
 
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(` Server is running on http://localhost:${PORT}`);
     });
+
+    (globalThis as typeof globalThis & { __server?: any }).__server = server;
   } catch (error) {
     console.error(" Server startup failed:", error);
     process.exit(1);
@@ -27,15 +29,14 @@ const startServer = async (): Promise<void> => {
 
 const init = async (): Promise<void> => {
   console.log("Initializing server...");
-  startServer();
-  try {
-  } catch (error) {
-    console.error("Error during server initialization:", error);
-    process.exit(1);
-  }
+  await startServer();
 };
 
-init().catch((_error) => {
-  console.error("Unhandled error during initialization:", _error);
-  process.exit(1);
-});
+if (process.env.NODE_ENV !== "test") {
+  init().catch((_error) => {
+    console.error("Unhandled error during initialization:", _error);
+    process.exit(1);
+  });
+}
+
+export { app };
