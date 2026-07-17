@@ -5,9 +5,13 @@ import helment from "helmet";
 import cookieParser from "cookie-parser";
 import { type Request, type Response } from "express";
 
+//Routes
+import authRoutes from "./src/routes/auth.route.ts";
+
 dotenv.config();
 
 const app = express();
+app.use("/auth", authRoutes);
 
 app.use(helment());
 
