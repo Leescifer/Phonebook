@@ -11,7 +11,7 @@ export interface CreateUserDto {
 class AuthRepository {
   async findByEmail(email: string) {
     const [rows] = await mysqlPool.query<RowDataPacket[]>(
-      "SELECT * FROM users WHERE email = ? LIMIT 1",
+      `SELECT u.*, r.role_name FROM users u LEFT JOIN roles r ON u.role_id = r.id WHERE u.email = ? LIMIT 1`,
       [email],
     );
 
@@ -20,7 +20,7 @@ class AuthRepository {
 
   async findById(id: number) {
     const [rows] = await mysqlPool.query<RowDataPacket[]>(
-      "SELECT * FROM users WHERE id = ? LIMIT 1",
+      `SELECT u.*, r.role_name FROM users u LEFT JOIN roles r ON u.role_id = r.id WHERE u.id = ? LIMIT 1`,
       [id],
     );
 
@@ -31,8 +31,8 @@ class AuthRepository {
     const [result] = await mysqlPool.execute<ResultSetHeader>(
       `
       INSERT INTO users
-      (email, password, first_name, last_name, is_approved, status)
-      VALUES (?, ?, ?, ?, ?, ?)
+      (email, password, first_name, last_name, is_approved, status, role_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
       `,
       [
         user.email,
@@ -40,11 +40,19 @@ class AuthRepository {
         user.first_name,
         user.last_name,
         false,
-        "PENDING",
+        "ACTIVE",
+        3,
       ],
     );
 
     return result.insertId;
+  }
+
+  async updatePassword(id: number, password: string) {
+    await mysqlPool.execute("UPDATE users SET password = ? WHERE id = ?", [
+      password,
+      id,
+    ]);
   }
 }
 
