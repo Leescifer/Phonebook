@@ -9,7 +9,7 @@ dotenv.config();
 
 console.log("Enviroment loaded, NODE_ENV:", process.env.NODE_ENV);
 
-const PORT = Number(process.env.PORT ?? 3000);
+const PORT = process.env.PORT;
 
 const startServer = async (): Promise<void> => {
   try {
