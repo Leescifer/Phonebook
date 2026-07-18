@@ -71,7 +71,7 @@ class AuthController {
       if (!user) {
         return res.status(401).json({
           success: false,
-          message: "Invalid email or password.",
+          message: "Invalid email.",
         });
       }
 
@@ -80,7 +80,7 @@ class AuthController {
       if (!passwordMatch) {
         return res.status(401).json({
           success: false,
-          message: "Invalid email or password.",
+          message: "Invalid password.",
         });
       }
 
@@ -145,12 +145,10 @@ class AuthController {
       const { email, newPassword } = req.body;
 
       if (!email || !newPassword) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Email and new password are required.",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Email and new password are required.",
+        });
       }
 
       const user = await authRepository.findByEmail(email);
