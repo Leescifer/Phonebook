@@ -1,4 +1,7 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "./hooks/hooks";
+import { apiRequest } from "./utils";
 import "./App.css";
 
 type User = {
@@ -21,10 +24,7 @@ type Contact = {
   createdAt: string;
 };
 
-type AuthState = {
-  token: string | null;
-  user: User | null;
-};
+// AuthState removed; using AuthContext via useAuth
 
 type AuthForm = {
   name: string;
@@ -53,7 +53,7 @@ const fallbackPhoto =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80";
 
 function App() {
-  const [auth, setAuth] = useState<AuthState>({ token: null, user: null });
+  const { token, user, login, register, logout } = useAuth();
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [authForm, setAuthForm] = useState<AuthForm>(emptyAuthForm);
   const [contactForm, setContactForm] = useState<ContactForm>(emptyContactForm);
@@ -64,16 +64,16 @@ function App() {
   const [error, setError] = useState("");
   const [shareTargets, setShareTargets] = useState<Record<string, string>>({});
 
-  const isAdmin = auth.user?.role === "admin";
+  const isAdmin = user?.role === "admin";
 
   const loadData = async (token: string) => {
     try {
-      const [meResponse, contactsResponse, usersResponse] = await Promise.all([
+      const [, contactsResponse, usersResponse] = await Promise.all([
         apiRequest("/api/auth/me", token),
         apiRequest("/api/contacts", token),
         apiRequest("/api/users", token),
       ]);
-      setAuth((current) => ({ ...current, user: meResponse.user }));
+      // AuthContext already provides the current user; here we only load contacts/users
       setContacts(contactsResponse.contacts ?? []);
       setUsers(usersResponse.users ?? []);
     } catch (err) {
@@ -82,13 +82,13 @@ function App() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("phonebook-token");
     if (token) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setAuth((current) => ({ ...current, token }));
       void loadData(token);
+    } else {
+      setContacts([]);
+      setUsers([]);
     }
-  }, []);
+  }, [token]);
 
   const filteredContacts = useMemo(() => {
     if (!search.trim()) {
@@ -109,23 +109,21 @@ function App() {
     setError("");
 
     try {
-      const endpoint =
-        authMode === "login" ? "/api/auth/login" : "/api/auth/register";
-      const payload =
-        authMode === "login"
-          ? { email: authForm.email, password: authForm.password }
-          : authForm;
-
-      const response = await apiRequest(
-        endpoint,
-        null,
-        payload,
-        authMode === "register" ? "POST" : "POST",
-      );
-      localStorage.setItem("phonebook-token", response.token);
-      setAuth({ token: response.token, user: response.user });
-      setAuthForm(emptyAuthForm);
-      void loadData(response.token);
+      if (authMode === "login") {
+        const res = await login(authForm.email, authForm.password);
+        if (!res.success) throw new Error(res.message || "Login failed");
+        setAuthForm(emptyAuthForm);
+      } else {
+        const res = await register({
+          email: authForm.email,
+          password: authForm.password,
+          first_name: authForm.name.split(" ")[0] ?? "",
+          last_name: authForm.name.split(" ").slice(1).join(" ") ?? "",
+        });
+        if (!res.success) throw new Error(res.message || "Registration failed");
+        setAuthMode("login");
+        setAuthForm(emptyAuthForm);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed");
     }
@@ -135,7 +133,7 @@ function App() {
     event: React.FormEvent<HTMLFormElement>,
   ) => {
     event.preventDefault();
-    if (!auth.token) {
+    if (!token) {
       return;
     }
 
@@ -144,7 +142,7 @@ function App() {
       if (editingId) {
         const updated = await apiRequest(
           `/api/contacts/${editingId}`,
-          auth.token,
+          token,
           payload,
           "PUT",
         );
@@ -157,7 +155,7 @@ function App() {
       } else {
         const created = await apiRequest(
           "/api/contacts",
-          auth.token,
+          token,
           payload,
           "POST",
         );
@@ -181,17 +179,12 @@ function App() {
   };
 
   const handleDelete = async (contactId: string) => {
-    if (!auth.token) {
+    if (!token) {
       return;
     }
 
     try {
-      await apiRequest(
-        `/api/contacts/${contactId}`,
-        auth.token,
-        null,
-        "DELETE",
-      );
+      await apiRequest(`/api/contacts/${contactId}`, token, null, "DELETE");
       setContacts((current) =>
         current.filter((contact) => contact.id !== contactId),
       );
@@ -201,7 +194,7 @@ function App() {
   };
 
   const handleShare = async (contactId: string) => {
-    if (!auth.token) {
+    if (!token) {
       return;
     }
 
@@ -214,7 +207,7 @@ function App() {
     try {
       const updated = await apiRequest(
         `/api/contacts/${contactId}/share`,
-        auth.token,
+        token,
         { userId: targetUserId },
         "POST",
       );
@@ -229,16 +222,14 @@ function App() {
   };
 
   const handleRemoveShare = async (contactId: string, userId: string) => {
-    if (!auth.token) {
-      return;
-    }
+    if (!token) return;
 
     try {
       const updated = await apiRequest(
-        `/api/contacts/${contactId}/share`,
-        auth.token,
+        `/api/contacts/${contactId}/unshare`,
+        token,
         { userId },
-        "DELETE",
+        "POST",
       );
       setContacts((current) =>
         current.map((contact) =>
@@ -253,14 +244,14 @@ function App() {
   };
 
   const handleStatusChange = async (userId: string, status: User["status"]) => {
-    if (!auth.token) {
+    if (!token) {
       return;
     }
 
     try {
       const response = await apiRequest(
         `/api/users/${userId}/status`,
-        auth.token,
+        token,
         { status },
         "POST",
       );
@@ -273,14 +264,13 @@ function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("phonebook-token");
-    setAuth({ token: null, user: null });
+    logout();
     setContacts([]);
     setUsers([]);
     setError("");
   };
 
-  if (!auth.user) {
+  if (!user) {
     return (
       <div className="app-shell">
         <section className="hero-card">
@@ -357,7 +347,7 @@ function App() {
       <header className="topbar">
         <div>
           <p className="eyebrow">Phonebook dashboard</p>
-          <h2>Welcome back, {auth.user.name}</h2>
+          <h2>Welcome back, {user?.name}</h2>
         </div>
         <button className="secondary-btn" onClick={handleLogout}>
           Logout
@@ -382,7 +372,7 @@ function App() {
         </article>
         <article className="card stat-card">
           <p>Account role</p>
-          <strong>{auth.user.role}</strong>
+          <strong>{user?.role}</strong>
         </article>
       </section>
 
@@ -526,10 +516,10 @@ function App() {
                   >
                     <option value="">Share with</option>
                     {users
-                      .filter((user) => user.id !== auth.user?.id)
-                      .map((user) => (
-                        <option key={user.id} value={user.id}>
-                          {user.name}
+                      .filter((u) => u.id !== user?.id)
+                      .map((u) => (
+                        <option key={u.id} value={u.id}>
+                          {u.name}
                         </option>
                       ))}
                   </select>
@@ -581,33 +571,6 @@ function App() {
       ) : null}
     </div>
   );
-}
-
-async function apiRequest(
-  path: string,
-  token: string | null,
-  body?: unknown,
-  method = "GET",
-) {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const response = await fetch(path, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(payload.error ?? "Request failed");
-  }
-
-  return payload;
 }
 
 export default App;
