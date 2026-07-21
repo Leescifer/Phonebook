@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "./hooks/hooks";
 import { apiRequest } from "./utils";
-import "./App.css";
 
 type User = {
   id: string;

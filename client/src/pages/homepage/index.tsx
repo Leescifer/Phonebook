@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { listContacts, createContact } from "../../services/api.routes";
 import { useAuth } from "../../hooks/hooks";
+import { Button } from "../../../@/components/ui/button.tsx";
 
 const Homepage: React.FC = () => {
   const { user } = useAuth();
@@ -37,7 +38,7 @@ const Homepage: React.FC = () => {
   return (
     <div>
       <h1>Welcome {user ? user.first_name : "Guest"}</h1>
-      <button onClick={handleAdd}>Add demo contact</button>
+      <Button onClick={handleAdd}>Add demo contact</Button>
       <ul>
         {contacts.map((c) => (
           <li key={c._id || c.id}>
