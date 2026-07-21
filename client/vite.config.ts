@@ -4,9 +4,8 @@ import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "path";
 
-const backendPort = process.env.SERVER_PORT?.trim() || "4201";
+const backendPort = process.env.VITE_BACKEND_URL;
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
