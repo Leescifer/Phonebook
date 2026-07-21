@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { listContacts, createContact } from "../../services/api.routes";
 import { useAuth } from "../../hooks/hooks";
-import { Button } from "../../../@/components/ui/button.tsx";
+
+type Contact = {
+  _id?: string;
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  contactNumber?: string;
+};
 
 const Homepage: React.FC = () => {
   const { user } = useAuth();
-  const [contacts, setContacts] = useState<unknown[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/immutability
@@ -38,7 +45,13 @@ const Homepage: React.FC = () => {
   return (
     <div>
       <h1>Welcome {user ? user.first_name : "Guest"}</h1>
-      <Button onClick={handleAdd}>Add demo contact</Button>
+      <button
+        type="button"
+        onClick={handleAdd}
+        className="rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
+      >
+        Add demo contact
+      </button>
       <ul>
         {contacts.map((c) => (
           <li key={c._id || c.id}>
