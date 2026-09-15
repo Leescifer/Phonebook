@@ -1,6 +1,12 @@
 const baseURL = import.meta.env.VITE_BACKEND_URL;
 
-type ReqOptions = { params?: Record<string, any> } | undefined;
+type ReqOptions =
+  | { params?: Record<string, string | number | boolean> }
+  | undefined;
+
+interface ApiError extends Error {
+  response?: { data: unknown; status: number };
+}
 
 const api = {
   defaults: {
@@ -15,8 +21,8 @@ const api = {
   }: {
     url: string;
     method?: string;
-    data?: any;
-    params?: Record<string, any>;
+    data?: unknown;
+    params?: Record<string, string | number | boolean>;
   }) {
     let full = `${baseURL}${url}`;
     if (params) {
@@ -38,12 +44,15 @@ const api = {
       credentials: "include",
     });
 
-    const payload = await res.json().catch(() => ({}));
+    const payload = (await res.json().catch(() => ({}))) as Record<
+      string,
+      unknown
+    >;
     if (!res.ok) {
-      const err = new Error(
-        payload?.message || res.statusText || "Request failed",
+      const err: ApiError = new Error(
+        (payload?.message as string) || res.statusText || "Request failed",
       );
-      (err as any).response = { data: payload, status: res.status };
+      err.response = { data: payload, status: res.status };
       throw err;
     }
 
@@ -54,15 +63,15 @@ const api = {
     return api.request({ url, method: "GET", params: options?.params });
   },
 
-  post(url: string, data?: any) {
+  post(url: string, data?: unknown) {
     return api.request({ url, method: "POST", data });
   },
 
-  put(url: string, data?: any) {
+  put(url: string, data?: unknown) {
     return api.request({ url, method: "PUT", data });
   },
 
-  delete(url: string, data?: any) {
+  delete(url: string, data?: unknown) {
     return api.request({ url, method: "DELETE", data });
   },
 };

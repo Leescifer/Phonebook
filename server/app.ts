@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import helment from "helmet";
 import cookieParser from "cookie-parser";
-import { type Request, type Response } from "express";
+import { type Request, type Response, type NextFunction } from "express";
 
 //Routes
 import authRoutes from "./src/routes/auth.route.ts";
@@ -20,7 +20,7 @@ const allowedOrigins = process.env.CLIENT_URL?.trim().replace(/\/$/, "");
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: [
@@ -60,7 +60,7 @@ app.use((req: Request, res: Response) => {
   res.status(404).json({ error: "Not Found" });
 });
 
-app.use((err: Error, req: Request, res: Response) => {
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ error: "Internal Server Error" });
 });

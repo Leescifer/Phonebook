@@ -27,9 +27,9 @@ export function AuthCard({
   onSubmit,
 }: AuthCardProps) {
   return (
-    <Card className="w-full max-w-md border-0 shadow-xl">
+    <Card className="w-full max-w-md rounded-lg border border-gray-200 bg-white shadow-sm">
       <CardHeader className="space-y-4">
-        <CardTitle className="text-center text-3xl font-bold">
+        <CardTitle className="text-center text-2xl font-bold text-black sm:text-3xl">
           Welcome
         </CardTitle>
 
@@ -39,9 +39,19 @@ export function AuthCard({
             setAuthMode(value as "login" | "register")
           }
         >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="register">Register</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 rounded-md border border-gray-200 bg-gray-50 p-1">
+            <TabsTrigger
+              value="login"
+              className="rounded-sm text-sm font-semibold text-gray-600 data-[state=active]:bg-blue-700 data-[state=active]:text-white"
+            >
+              Login
+            </TabsTrigger>
+            <TabsTrigger
+              value="register"
+              className="rounded-sm text-sm font-semibold text-gray-600 data-[state=active]:bg-blue-700 data-[state=active]:text-white"
+            >
+              Register
+            </TabsTrigger>
           </TabsList>
         </Tabs>
       </CardHeader>
@@ -50,39 +60,60 @@ export function AuthCard({
         <form onSubmit={onSubmit} className="space-y-5">
           {authMode === "register" && (
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label
+                htmlFor="name"
+                className="text-sm font-semibold text-gray-700"
+              >
+                Full Name
+              </Label>
               <Input
                 id="name"
                 placeholder="John Doe"
                 value={authForm.name}
                 onChange={(e) => updateField("name", e.target.value)}
+                className="border-gray-200 focus-visible:border-blue-700 focus-visible:ring-2 focus-visible:ring-blue-100"
               />
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label
+              htmlFor="email"
+              className="text-sm font-semibold text-gray-700"
+            >
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
               placeholder="john@example.com"
               value={authForm.email}
               onChange={(e) => updateField("email", e.target.value)}
+              className="border-gray-200 focus-visible:border-blue-700 focus-visible:ring-2 focus-visible:ring-blue-100"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label
+              htmlFor="password"
+              className="text-sm font-semibold text-gray-700"
+            >
+              Password
+            </Label>
             <Input
               id="password"
               type="password"
               placeholder="••••••••"
               value={authForm.password}
               onChange={(e) => updateField("password", e.target.value)}
+              className="border-gray-200 focus-visible:border-blue-700 focus-visible:ring-2 focus-visible:ring-blue-100"
             />
           </div>
 
-          <Button type="submit" className="w-full">
+          <Button
+            type="submit"
+            className="w-full rounded-md bg-blue-700 font-semibold text-white hover:bg-blue-800"
+          >
             {authMode === "login" ? "Sign In" : "Create Account"}
           </Button>
         </form>
